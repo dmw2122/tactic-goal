@@ -1,0 +1,41 @@
+{
+  "id": "1-10",
+  "title": "Antrenman 10",
+  "world": 1,
+  "width": 6,
+  "height": 6,
+  "start": {
+    "x": 1,
+    "y": 1
+  },
+  "goal": {
+    "x": 5,
+    "y": 1
+  },
+  "threeStarMoves": 1,
+  "twoStarMoves": 2,
+  "cards": [
+    {
+      "type": "shoot",
+      "power": 4
+    }
+  ],
+  "tiles": [
+    {
+      "kind": "mud",
+      "x": 1,
+      "y": 3
+    },
+    {
+      "kind": "obstacle",
+      "x": 4,
+      "y": 3
+    },
+    {
+      "kind": "goal",
+      "x": 5,
+      "y": 1
+    }
+  ],
+  "verifiedSolutionLength": 1
+}

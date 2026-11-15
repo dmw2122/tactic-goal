@@ -1,0 +1,36 @@
+{
+  "id": "1-6",
+  "title": "Antrenman 6",
+  "world": 1,
+  "width": 6,
+  "height": 6,
+  "start": {
+    "x": 4,
+    "y": 2
+  },
+  "goal": {
+    "x": 4,
+    "y": 4
+  },
+  "threeStarMoves": 1,
+  "twoStarMoves": 2,
+  "cards": [
+    {
+      "type": "pass",
+      "power": 2
+    }
+  ],
+  "tiles": [
+    {
+      "kind": "ice",
+      "x": 2,
+      "y": 2
+    },
+    {
+      "kind": "goal",
+      "x": 4,
+      "y": 4
+    }
+  ],
+  "verifiedSolutionLength": 1
+}

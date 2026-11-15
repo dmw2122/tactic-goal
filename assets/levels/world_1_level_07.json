@@ -1,0 +1,40 @@
+{
+  "id": "1-7",
+  "title": "Antrenman 7",
+  "world": 1,
+  "width": 6,
+  "height": 6,
+  "start": {
+    "x": 4,
+    "y": 5
+  },
+  "goal": {
+    "x": 1,
+    "y": 5
+  },
+  "threeStarMoves": 1,
+  "twoStarMoves": 2,
+  "cards": [
+    {
+      "type": "pass",
+      "power": 3
+    },
+    {
+      "type": "lob",
+      "power": 2
+    }
+  ],
+  "tiles": [
+    {
+      "kind": "defender",
+      "x": 4,
+      "y": 3
+    },
+    {
+      "kind": "goal",
+      "x": 1,
+      "y": 5
+    }
+  ],
+  "verifiedSolutionLength": 1
+}

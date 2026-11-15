@@ -1,0 +1,40 @@
+{
+  "id": "2-2",
+  "title": "Amatör 2",
+  "world": 2,
+  "width": 6,
+  "height": 6,
+  "start": {
+    "x": 5,
+    "y": 4
+  },
+  "goal": {
+    "x": 3,
+    "y": 2
+  },
+  "threeStarMoves": 2,
+  "twoStarMoves": 3,
+  "cards": [
+    {
+      "type": "shoot",
+      "power": 2
+    },
+    {
+      "type": "pass",
+      "power": 2
+    }
+  ],
+  "tiles": [
+    {
+      "kind": "ice",
+      "x": 4,
+      "y": 4
+    },
+    {
+      "kind": "goal",
+      "x": 3,
+      "y": 2
+    }
+  ],
+  "verifiedSolutionLength": 2
+}

@@ -1,0 +1,45 @@
+{
+  "id": "2-3",
+  "title": "Amatör 3",
+  "world": 2,
+  "width": 6,
+  "height": 6,
+  "start": {
+    "x": 0,
+    "y": 5
+  },
+  "goal": {
+    "x": 2,
+    "y": 3
+  },
+  "threeStarMoves": 2,
+  "twoStarMoves": 3,
+  "cards": [
+    {
+      "type": "lob",
+      "power": 2
+    },
+    {
+      "type": "pass",
+      "power": 2
+    }
+  ],
+  "tiles": [
+    {
+      "kind": "obstacle",
+      "x": 1,
+      "y": 5
+    },
+    {
+      "kind": "defender",
+      "x": 2,
+      "y": 4
+    },
+    {
+      "kind": "goal",
+      "x": 2,
+      "y": 3
+    }
+  ],
+  "verifiedSolutionLength": 2
+}

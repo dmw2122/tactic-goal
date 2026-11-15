@@ -1,0 +1,41 @@
+{
+  "id": "1-8",
+  "title": "Antrenman 8",
+  "world": 1,
+  "width": 6,
+  "height": 6,
+  "start": {
+    "x": 2,
+    "y": 4
+  },
+  "goal": {
+    "x": 2,
+    "y": 1
+  },
+  "threeStarMoves": 1,
+  "twoStarMoves": 2,
+  "cards": [
+    {
+      "type": "lob",
+      "power": 3
+    }
+  ],
+  "tiles": [
+    {
+      "kind": "obstacle",
+      "x": 2,
+      "y": 3
+    },
+    {
+      "kind": "defender",
+      "x": 2,
+      "y": 2
+    },
+    {
+      "kind": "goal",
+      "x": 2,
+      "y": 1
+    }
+  ],
+  "verifiedSolutionLength": 1
+}
