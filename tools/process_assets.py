@@ -1,91 +1,170 @@
+import math
 from pathlib import Path
-from PIL import Image
-
+from PIL import Image, ImageDraw, ImageFilter
+import numpy as np
 
 PROJECT = Path(__file__).resolve().parents[1]
-BLENDER = Path.home() / "Desktop" / "tactic_goal_assets" / "assets" / "images"
-OLD_PACK = Path.home() / "Desktop" / "tactic_goal_assets"
+RAW = PROJECT / "raw_assets"
 DEST = PROJECT / "assets" / "images"
+BRAIN = Path.home() / ".gemini" / "antigravity" / "brain" / "b6c935ea-a8e6-447e-8b0b-be8c9cf69df0"
+FALLBACK_ASSETS = Path.home() / "Desktop" / "tactic_goal_assets" / "assets" / "images"
 
-ASSETS = {
+ASSET_SPECS = {
     "tiles": {
-        "tile_grass_light.png": BLENDER / "tiles" / "tile_grass_light.png",
-        "tile_grass_dark.png": BLENDER / "tiles" / "tile_grass_dark.png",
-        "tile_mud.png": BLENDER / "tiles" / "tile_mud.png",
-        "tile_ice.png": BLENDER / "tiles" / "tile_ice.png",
-        "tile_ramp_ne.png": BLENDER / "tiles" / "tile_ramp_ne.png",
-        "tile_ramp_nw.png": BLENDER / "tiles" / "tile_ramp_nw.png",
-        "tile_ramp_se.png": BLENDER / "tiles" / "tile_ramp_se.png",
-        "tile_ramp_sw.png": BLENDER / "tiles" / "tile_ramp_sw.png",
-        "tile_target_zone.png": BLENDER / "tiles" / "tile_target_zone.png",
+        "tile_grass_light.png": (256, 192),
+        "tile_grass_dark.png": (256, 192),
+        "tile_mud.png": (256, 192),
+        "tile_ice.png": (256, 192),
+        "tile_ramp_ne.png": (256, 192),
+        "tile_ramp_nw.png": (256, 192),
+        "tile_ramp_se.png": (256, 192),
+        "tile_ramp_sw.png": (256, 192),
+        "tile_target_zone.png": (256, 192),
     },
     "entities": {
-        "ball.png": BLENDER / "entities" / "ball.png",
-        "ball_shadow.png": OLD_PACK / "entities" / "ball_shadow.png",
-        "player_teammate.png": BLENDER / "entities" / "player_teammate.png",
-        "player_defender.png": BLENDER / "entities" / "player_defender.png",
-        "player_goalkeeper.png": BLENDER / "entities" / "player_goalkeeper.png",
-        "goal_front.png": BLENDER / "entities" / "goal_front.png",
-        "goal_side.png": BLENDER / "entities" / "goal_side.png",
-        "obstacle_cone.png": BLENDER / "entities" / "obstacle_cone.png",
-        "obstacle_barrier.png": BLENDER / "entities" / "obstacle_barrier.png",
+        "ball.png": (256, 256),
+        "player_teammate.png": (256, 256),
+        "player_defender.png": (256, 256),
+        "player_goalkeeper.png": (256, 256),
+        "goal_front.png": (256, 256),
+        "goal_side.png": (256, 256),
+        "obstacle_cone.png": (256, 256),
+        "obstacle_barrier.png": (256, 256),
     },
     "ui": {
-        "card_shoot.png": BLENDER / "ui" / "card_shoot.png",
-        "card_pass.png": BLENDER / "ui" / "card_pass.png",
-        "card_lob.png": BLENDER / "ui" / "card_lob.png",
-        "card_curve.png": OLD_PACK / "ui" / "card_curve.png",
-        "icon_undo.png": BLENDER / "ui" / "icon_undo.png",
-        "icon_restart.png": BLENDER / "ui" / "icon_restart.png",
-        "icon_settings.png": BLENDER / "ui" / "icon_settings.png",
-        "icon_sound_on.png": OLD_PACK / "ui" / "icon_sound_on.png",
-        "icon_sound_off.png": BLENDER / "ui" / "icon_sound_off.png",
-        "icon_leagues.png": BLENDER / "ui" / "icon_leagues.png",
-        "arrow_guide.png": BLENDER / "ui" / "arrow_guide.png",
-        "indicator_valid.png": BLENDER / "ui" / "indicator_valid.png",
-        "indicator_invalid.png": BLENDER / "ui" / "indicator_invalid.png",
+        "card_shoot.png": (256, 360),
+        "card_pass.png": (256, 360),
+        "card_lob.png": (256, 360),
+        "card_curve.png": (256, 360),
+        "icon_undo.png": (128, 128),
+        "icon_restart.png": (128, 128),
+        "icon_settings.png": (128, 128),
+        "icon_sound_on.png": (128, 128),
+        "icon_sound_off.png": (128, 128),
+        "icon_leagues.png": (128, 128),
+        "arrow_guide.png": (128, 128),
+        "indicator_valid.png": (128, 128),
+        "indicator_invalid.png": (128, 128),
     },
 }
 
+def remove_white_background(img: Image.Image, threshold: int = 240, tolerance: int = 25) -> Image.Image:
+    """Removes solid/off-white background using edge-connected flood fill & color thresholding."""
+    rgba = img.convert("RGBA")
+    arr = np.array(rgba, dtype=np.uint8)
+    r, g, b, a = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2], arr[:, :, 3]
+    
+    # Check brightness and low saturation (white/off-white)
+    brightness = (r.astype(np.int32) + g.astype(np.int32) + b.astype(np.int32)) // 3
+    color_diff = np.maximum.reduce([np.abs(r - g), np.abs(g - b), np.abs(b - r)])
+    
+    is_white = (brightness >= threshold) & (color_diff <= tolerance)
+    
+    # Calculate alpha mask: fully transparent where is_white, smooth transition near boundary
+    alpha_channel = np.where(is_white, 0, 255).astype(np.uint8)
+    
+    # Smooth edges with feathering
+    mask_img = Image.fromarray(alpha_channel, mode='L')
+    mask_img = mask_img.filter(ImageFilter.GaussianBlur(radius=0.75))
+    
+    rgba.putalpha(mask_img)
+    return rgba
 
-def target_size(category: str, filename: str) -> tuple[int, int]:
-    if category == "tiles":
-        return (256, 192)
-    if category == "entities":
-        return (256, 256)
-    if filename.startswith("card_"):
-        return (256, 360)
-    return (128, 128)
+def create_ball_shadow(size: tuple[int, int] = (256, 256)) -> Image.Image:
+    """Creates a smooth soft black elliptical shadow for the ball."""
+    img = Image.new("RGBA", size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    cx, cy = size[0] // 2, size[1] // 2 + 35
+    rx, ry = 64, 28
+    
+    # Draw nested ellipses with increasing transparency
+    for i in range(24, 0, -1):
+        alpha = int(120 * (1 - i / 24))
+        cur_rx = rx + i * 2
+        cur_ry = ry + int(i * 1.2)
+        draw.ellipse(
+            [cx - cur_rx, cy - cur_ry, cx + cur_rx, cy + cur_ry],
+            fill=(20, 30, 20, alpha)
+        )
+    return img.filter(ImageFilter.GaussianBlur(radius=6))
 
+def locate_source_file(category: str, filename: str) -> Path | None:
+    stem = Path(filename).stem
+    candidates = [
+        RAW / category / f"{stem}.jpg",
+        RAW / category / f"{stem}.png",
+        RAW / f"{stem}.jpg",
+        RAW / f"{stem}.png",
+    ]
+    # Check brain directory for subagent-generated images
+    for brain_file in sorted(BRAIN.glob(f"*{stem}*.jpg")):
+        candidates.append(brain_file)
+    for brain_file in sorted(BRAIN.glob(f"*{stem}*.png")):
+        candidates.append(brain_file)
+    # Check fallback directory
+    candidates.append(FALLBACK_ASSETS / category / filename)
+    candidates.append(FALLBACK_ASSETS.parent.parent / category / filename)
+    
+    for candidate in candidates:
+        if candidate.exists() and candidate.is_file():
+            return candidate
+    return None
 
-def process(source: Path, destination: Path, size: tuple[int, int]) -> None:
-    if not source.is_file():
-        raise FileNotFoundError(f"Required source image is missing: {source}")
-    with Image.open(source) as opened:
-        image = opened.convert("RGBA")
-    bounds = image.getchannel("A").getbbox()
-    if bounds is not None:
-        image = image.crop(bounds)
-    inner = (max(1, size[0] - 12), max(1, size[1] - 12))
-    image.thumbnail(inner, Image.Resampling.LANCZOS)
-    canvas = Image.new("RGBA", size, (0, 0, 0, 0))
-    canvas.alpha_composite(image, ((size[0] - image.width) // 2,
-                                   (size[1] - image.height) // 2))
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    canvas.save(destination, "PNG", optimize=True)
-    with Image.open(destination) as check:
-        check.verify()
+def process_single_asset(src: Path, dest: Path, target_size: tuple[int, int]) -> None:
+    with Image.open(src) as opened:
+        img = opened.convert("RGBA")
+    
+    # If source already has alpha and not fully opaque, keep it or trim white
+    arr = np.array(img)
+    min_alpha = arr[:, :, 3].min()
+    
+    if min_alpha > 240:
+        # Source has solid background (white) -> remove white
+        img = remove_white_background(img)
+    
+    # Trim empty / transparent margins
+    bbox = img.getchannel("A").getbbox()
+    if bbox is not None:
+        img = img.crop(bbox)
+    
+    # Scale to target size with padding
+    pad = 12
+    max_w = max(1, target_size[0] - pad * 2)
+    max_h = max(1, target_size[1] - pad * 2)
+    img.thumbnail((max_w, max_h), Image.Resampling.LANCZOS)
+    
+    # Center on canvas
+    canvas = Image.new("RGBA", target_size, (0, 0, 0, 0))
+    offset = ((target_size[0] - img.width) // 2, (target_size[1] - img.height) // 2)
+    canvas.alpha_composite(img, offset)
+    
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    canvas.save(dest, "PNG", optimize=True)
 
-
-def main() -> None:
-    count = 0
-    for category, files in ASSETS.items():
-        for filename, source in files.items():
-            process(source, DEST / category / filename, target_size(category, filename))
-            count += 1
-            print(f"Processed {category}/{filename}")
-    print(f"Prepared {count} transparent game assets at {DEST}")
-
+def main():
+    print("=== Processing Tactic Goal Game Assets ===")
+    total = 0
+    
+    # 1. Process all tile, entity, ui assets
+    for category, items in ASSET_SPECS.items():
+        for filename, size in items.items():
+            src = locate_source_file(category, filename)
+            dest = DEST / category / filename
+            if src and src.exists():
+                process_single_asset(src, dest, size)
+                print(f"[OK] {category}/{filename} <= {src.name} (size: {size})")
+                total += 1
+            else:
+                print(f"[WARN] Source not found for {category}/{filename}")
+    
+    # 2. Generate smooth ball shadow
+    shadow_dest = DEST / "entities" / "ball_shadow.png"
+    shadow_img = create_ball_shadow((256, 256))
+    shadow_img.save(shadow_dest, "PNG", optimize=True)
+    print(f"[OK] entities/ball_shadow.png generated")
+    total += 1
+    
+    print(f"=== Successfully processed {total} assets in {DEST} ===")
 
 if __name__ == "__main__":
     main()

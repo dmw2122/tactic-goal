@@ -50,9 +50,9 @@ jobs:
         run: |
           mkdir -p packaging/Payload
           cp -R build/ios/iphoneos/Runner.app packaging/Payload/
-          (cd packaging && zip -qr ../TacticGoal-iOS-Unsigned.ipa Payload)
+          (cd packaging && zip -qr ../TacticGoal-iOS-IPA.ipa Payload)
       - uses: actions/upload-artifact@v4
         with:
-          name: TacticGoal-iOS-Unsigned-IPA
-          path: TacticGoal-iOS-Unsigned.ipa
+          name: TacticGoal-iOS-IPA
+          path: TacticGoal-iOS-IPA.ipa
           if-no-files-found: error
