@@ -21,6 +21,7 @@ class TacticGoalGame extends FlameGame {
 
   late final SpriteComponent _ball;
   late final SpriteComponent _shadow;
+  late final SpriteComponent _goal;
   final List<SpriteComponent> _guides = [];
   bool _loaded = false;
 
@@ -76,15 +77,14 @@ class TacticGoalGame extends FlameGame {
     }
 
     final goalCenter = _screenPosition(level.goal, 0);
-    add(
-      SpriteComponent(
-        sprite: Sprite(images.fromCache(_relative(GameAssets.goalFront))),
-        position: goalCenter + Vector2(0, -14),
-        size: Vector2(76, 76),
-        anchor: Anchor.center,
-        priority: (level.goal.x + level.goal.y) * 10 + 6,
-      ),
+    _goal = SpriteComponent(
+      sprite: Sprite(images.fromCache(_relative(GameAssets.goalFront))),
+      position: goalCenter + Vector2(0, -14),
+      size: Vector2(76, 76),
+      anchor: Anchor.center,
+      priority: (level.goal.x + level.goal.y) * 10 + 6,
     );
+    add(_goal);
     _shadow = SpriteComponent(
       sprite: Sprite(images.fromCache(_relative(GameAssets.ballShadow))),
       size: Vector2(38, 20),
@@ -127,6 +127,7 @@ class TacticGoalGame extends FlameGame {
     final path = switch (tile.kind) {
       TileKind.defender => GameAssets.defender,
       TileKind.teammate => GameAssets.teammate,
+      TileKind.goal => GameAssets.goalkeeper,
       TileKind.obstacle =>
         tile.position.x.isEven
             ? GameAssets.obstacleCone
@@ -183,6 +184,7 @@ class TacticGoalGame extends FlameGame {
       count: result.scored ? 24 : 8,
     );
     if (result.scored) {
+      await _shakeGoal();
       unawaited(_shake(strength: 8));
       onGoal();
     }
@@ -222,6 +224,14 @@ class TacticGoalGame extends FlameGame {
       guide.removeFromParent();
     }
     _guides.clear();
+  }
+
+  Future<void> _shakeGoal() async {
+    for (var i = 0; i < 6; i++) {
+      _goal.angle = i.isEven ? 0.075 : -0.075;
+      await Future<void>.delayed(const Duration(milliseconds: 35));
+    }
+    _goal.angle = 0;
   }
 
   Future<void> _shake({double strength = 3}) async {
